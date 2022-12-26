@@ -1,0 +1,44 @@
+const path = require('path');
+const fs = require("fs");
+const Image = require("@11ty/eleventy-img");
+Image.concurrency = 1;
+
+
+
+async function imageShortcode(src, alt, sizes) {
+  let metadata = await Image(src, {
+    widths: [300, 600],
+    formats: ["avif", "jpeg"],
+    outputDir: './website/img'
+  });
+
+  let imageAttributes = {
+    alt,
+    sizes,
+    loading: "lazy",
+    decoding: "async",
+  };
+
+  // You bet we throw an error on missing alt in `imageAttributes` (alt="" works okay)
+  return Image.generateHTML(metadata, imageAttributes);
+}
+
+
+
+module.exports = function(eleventyConfig) {
+  eleventyConfig.addPassthroughCopy({ "website/img": "img" });
+  eleventyConfig.addNunjucksAsyncShortcode("image", imageShortcode);
+  return {
+    templateFormats: [
+      "njk"
+    ],
+    markdownTemplateEngine: "njk",
+    htmlTemplateEngine: "njk",
+    dataTemplateEngine: "njk",
+    dir: {
+      input: "website",
+      output: "_site"
+    }
+  };
+
+};
